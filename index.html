@@ -4,6 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Focus Workout – Jefe's Gym</title>
+  <link rel="apple-touch-icon" href="./iphone_app.png" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Jefe's Gym" />
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;600&display=swap" rel="stylesheet" />
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -20,15 +24,18 @@
       --text-muted: #888;
     }
     .app { font-family: 'Barlow', sans-serif; max-width: 430px; margin: 0 auto; padding: 0 0 2rem; color: var(--text-main); }
-    .gym-header { background: var(--dark); border-bottom: 2px solid var(--gold); padding: 14px 16px 12px; display: flex; align-items: center; gap: 12px; margin-bottom: 1rem; }
+    .gym-header { position: sticky; top: 0; z-index: 50; background: #000; border-bottom: 2px solid var(--gold); padding: 14px 16px 12px; display: flex; align-items: center; gap: 12px; margin-bottom: 1rem; }
     .gym-logo { width: 52px; height: 52px; object-fit: contain; flex-shrink: 0; }
     .gym-name { font-family: 'Barlow Condensed', sans-serif; font-size: 22px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: var(--gold); line-height: 1; }
     .gym-sub { font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-muted); margin-top: 2px; }
-    .status-bar { font-size: 11px; color: var(--text-muted); margin-bottom: 1rem; min-height: 16px; padding: 0 12px; }
+    .status-bottom { font-size: 11px; color: var(--text-muted); padding: 12px 12px 0; text-align: center; }
+    .status-error { display: none; align-items: center; gap: 8px; background: rgba(200,40,40,0.12); border: 0.5px solid rgba(200,40,40,0.4); border-radius: 8px; margin: 0 12px 10px; padding: 9px 12px; font-size: 12px; color: #f87171; }
+    .status-error.visible { display: flex; }
+    .error-icon { width: 18px; height: 18px; border-radius: 50%; background: #c82828; color: #fff; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
     .workout-card { background: var(--dark-card); border: 0.5px solid var(--dark-border); border-radius: 12px; margin: 0 12px 10px; overflow: hidden; }
-    .workout-header { display: flex; align-items: center; gap: 10px; padding: 11px 14px 10px; border-bottom: 0.5px solid var(--dark-border); background: rgba(0,0,0,0.3); }
-    .accent-bar { width: 4px; height: 22px; border-radius: 2px; flex-shrink: 0; background: var(--gold); }
-    .card-upper .accent-bar { background: #e05a20; }
+    .workout-header { display: flex; align-items: center; gap: 10px; padding: 11px 14px 10px; border-bottom: 0.5px solid var(--dark-border); background-color: #0a0a0a; background-image: repeating-linear-gradient(45deg, rgba(245,168,0,0.04) 0px, rgba(245,168,0,0.04) 1px, transparent 1px, transparent 12px), repeating-linear-gradient(-45deg, rgba(245,168,0,0.04) 0px, rgba(245,168,0,0.04) 1px, transparent 1px, transparent 12px); border-left: 4px solid var(--gold); }
+    .card-upper .workout-header { border-left-color: #e05a20; background-image: repeating-linear-gradient(45deg, rgba(224,90,32,0.05) 0px, rgba(224,90,32,0.05) 1px, transparent 1px, transparent 12px), repeating-linear-gradient(-45deg, rgba(224,90,32,0.05) 0px, rgba(224,90,32,0.05) 1px, transparent 1px, transparent 12px); }
+    .accent-bar { display: none; }
     .workout-title { font-family: 'Barlow Condensed', sans-serif; font-size: 20px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold); }
     .card-upper .workout-title { color: #e07030; }
     .exercise-row { display: flex; align-items: center; padding: 10px 14px; border-bottom: 0.5px solid rgba(255,255,255,0.05); cursor: pointer; transition: background 0.12s; gap: 10px; }
@@ -66,19 +73,11 @@
       </div>
     </div>
 
-    <div class="status-bar" id="status-bar">Loading...</div>
+    <div class="status-error" id="status-error"><div class="error-icon">!</div><span id="error-msg"></span></div>
     <div id="workouts-container"></div>
+    <div class="status-bottom" id="status-bottom"></div>
 
-    <div class="config-section" id="config-section" style="display:none">
-      <div class="config-label">Supabase connection</div>
-      <div class="config-row"><input type="text" id="sb-url" placeholder="Project URL (https://xxx.supabase.co)" /></div>
-      <div class="config-row">
-        <input type="text" id="sb-key" placeholder="Anon key" />
-        <button class="config-save" onclick="saveConfig()">Save</button>
-      </div>
-      <p style="font-size:10px;color:#555;margin-top:6px">Supabase → Settings → API</p>
-    </div>
-    <button class="btn-ghost" onclick="toggleConfig()">⚙ Supabase settings</button>
+
   </div>
 
   <script>
@@ -178,9 +177,9 @@
             progress[workout.num] = { last_done_index: idx };
             saveLocal(progress);
             render();
-            setStatus('Saved');
+            setStatus('Saved', false);
             await upsertSupabase(workout.num, idx);
-            setStatus(supabaseUrl ? 'Synced' : 'Saved locally · Connect Supabase to sync across devices');
+            setStatus(supabaseUrl ? 'Synced' : 'Saved locally', false);
           });
 
           card.appendChild(row);
@@ -189,7 +188,18 @@
       });
     }
 
-    function setStatus(msg) { document.getElementById('status-bar').textContent = msg; }
+    function setStatus(msg, isError) {
+      const errEl = document.getElementById('status-error');
+      const botEl = document.getElementById('status-bottom');
+      if (isError) {
+        document.getElementById('error-msg').textContent = msg;
+        errEl.classList.add('visible');
+        botEl.textContent = '';
+      } else {
+        errEl.classList.remove('visible');
+        botEl.textContent = msg;
+      }
+    }
 
     function toggleConfig() {
       const el = document.getElementById('config-section');
@@ -206,7 +216,7 @@
       localStorage.setItem('sb_url', supabaseUrl);
       localStorage.setItem('sb_key', supabaseKey);
       document.getElementById('config-section').style.display = 'none';
-      setStatus('Connecting...');
+      setStatus('Connecting...', false);
       init();
     }
 
@@ -214,8 +224,8 @@
       const local = loadLocal();
       if (local) { progress = local; render(); }
       const remote = await fetchSupabase();
-      if (remote) { progress = remote; saveLocal(progress); setStatus('Synced'); }
-      else if (local) { setStatus(supabaseUrl ? 'Could not reach Supabase · showing local data' : 'Tap an exercise to set your focus'); }
+      if (remote) { progress = remote; saveLocal(progress); setStatus('Synced', false); }
+      else if (local) { setStatus(supabaseUrl ? 'Could not reach Supabase · showing local data' : 'Tap an exercise to set your focus', supabaseUrl ? true : false); }
       else { progress = {}; setStatus('Tap an exercise to set your focus'); }
       render();
     }
