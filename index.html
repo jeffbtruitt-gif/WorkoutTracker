@@ -61,6 +61,8 @@
     .config-row input { font-size: 12px; padding: 7px 10px; border-radius: 6px; flex: 1; background: #1a1a1a; border: 0.5px solid #333; color: var(--text-main); }
     .config-row input::placeholder { color: #555; }
     .config-save { background: var(--gold); color: var(--dark); border: none; border-radius: 6px; padding: 7px 14px; font-size: 12px; font-weight: 700; cursor: pointer; }
+    .toast { position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(12px); background: #1a6e3c; color: #d4f5e2; font-family: 'Barlow', sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 0.06em; padding: 6px 14px; border-radius: 20px; opacity: 0; transition: opacity 0.2s, transform 0.2s; pointer-events: none; white-space: nowrap; z-index: 200; }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
   </style>
 </head>
 <body>
@@ -79,6 +81,7 @@
 
 
   </div>
+  <div class="toast" id="toast">Saved</div>
 
   <script>
     const WORKOUTS = [
@@ -177,7 +180,7 @@
             progress[workout.num] = { last_done_index: idx };
             saveLocal(progress);
             render();
-            setStatus('Saved', false);
+            setStatus('Saved', false); showToast();
             await upsertSupabase(workout.num, idx);
             setStatus(supabaseUrl ? 'Synced' : 'Saved locally', false);
           });
@@ -188,6 +191,12 @@
       });
     }
 
+
+    function showToast() {
+      const t = document.getElementById('toast');
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 1600);
+    }
     function setStatus(msg, isError) {
       const errEl = document.getElementById('status-error');
       const botEl = document.getElementById('status-bottom');
