@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Focus Workout – Jefe's Gym</title>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #0d0d0d; min-height: 100vh; }
+    :root {
+      --gold: #f5a800;
+      --gold-light: #ffd35c;
+      --gold-bg: rgba(245,168,0,0.10);
+      --dark: #111111;
+      --dark-card: #1a1a1a;
+      --dark-border: rgba(245,168,0,0.22);
+      --dark-border-strong: rgba(245,168,0,0.45);
+      --text-main: #f0f0f0;
+      --text-muted: #888;
+    }
+    .app { font-family: 'Barlow', sans-serif; max-width: 430px; margin: 0 auto; padding: 0 0 2rem; color: var(--text-main); }
+    .gym-header { background: var(--dark); border-bottom: 2px solid var(--gold); padding: 14px 16px 12px; display: flex; align-items: center; gap: 12px; margin-bottom: 1rem; }
+    .gym-logo { width: 52px; height: 52px; object-fit: contain; flex-shrink: 0; }
+    .gym-name { font-family: 'Barlow Condensed', sans-serif; font-size: 22px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: var(--gold); line-height: 1; }
+    .gym-sub { font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-muted); margin-top: 2px; }
+    .status-bar { font-size: 11px; color: var(--text-muted); margin-bottom: 1rem; min-height: 16px; padding: 0 12px; }
+    .workout-card { background: var(--dark-card); border: 0.5px solid var(--dark-border); border-radius: 12px; margin: 0 12px 10px; overflow: hidden; }
+    .workout-header { display: flex; align-items: center; gap: 10px; padding: 11px 14px 10px; border-bottom: 0.5px solid var(--dark-border); background: rgba(0,0,0,0.3); }
+    .accent-bar { width: 4px; height: 22px; border-radius: 2px; flex-shrink: 0; background: var(--gold); }
+    .card-upper .accent-bar { background: #e05a20; }
+    .workout-title { font-family: 'Barlow Condensed', sans-serif; font-size: 20px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold); }
+    .card-upper .workout-title { color: #e07030; }
+    .exercise-row { display: flex; align-items: center; padding: 10px 14px; border-bottom: 0.5px solid rgba(255,255,255,0.05); cursor: pointer; transition: background 0.12s; gap: 10px; }
+    .exercise-row:last-child { border-bottom: none; }
+    .exercise-row:hover { background: rgba(255,255,255,0.04); }
+    .exercise-row:active { opacity: 0.7; }
+    .ex-name { flex: 1; font-size: 15px; font-weight: 600; color: var(--text-main); }
+    .ex-muscles { font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: var(--text-muted); }
+    .state-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; background: transparent; border: 1px solid #444; }
+    .state-dot.focus-lower { background: var(--gold); border-color: var(--gold); }
+    .state-dot.focus-upper { background: #e05a20; border-color: #e05a20; }
+    .exercise-row.is-focus-lower { background: var(--gold-bg); }
+    .exercise-row.is-focus-upper { background: rgba(224,90,32,0.08); }
+    .exercise-row.is-focus-lower .ex-name { color: var(--gold-light); }
+    .exercise-row.is-focus-upper .ex-name { color: #f08050; }
+    .focus-badge-lower { font-size: 9px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--dark); background: var(--gold); padding: 2px 7px; border-radius: 4px; }
+    .focus-badge-upper { font-size: 9px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #fff; background: #e05a20; padding: 2px 7px; border-radius: 4px; }
+    .btn-ghost { background: transparent; color: var(--text-muted); border: 0.5px solid #333; border-radius: 8px; padding: 11px; font-family: 'Barlow', sans-serif; font-size: 11px; cursor: pointer; transition: border-color 0.15s, color 0.15s; width: calc(100% - 24px); margin: 4px 12px 0; display: block; }
+    .btn-ghost:hover { border-color: var(--dark-border-strong); color: var(--gold); }
+    .config-section { background: #111; border: 0.5px solid #333; border-radius: 10px; padding: 1rem; margin: 0 12px 10px; }
+    .config-label { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px; }
+    .config-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+    .config-row input { font-size: 12px; padding: 7px 10px; border-radius: 6px; flex: 1; background: #1a1a1a; border: 0.5px solid #333; color: var(--text-main); }
+    .config-row input::placeholder { color: #555; }
+    .config-save { background: var(--gold); color: var(--dark); border: none; border-radius: 6px; padding: 7px 14px; font-size: 12px; font-weight: 700; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="gym-header">
+      <img class="gym-logo" src="./Jefe_s_Gym_logo_design.png" alt="Jefe's Gym" />
+      <div>
+        <div class="gym-name">Focus Workout</div>
+        <div class="gym-sub">Jefe's Gym</div>
+      </div>
+    </div>
+
+    <div class="status-bar" id="status-bar">Loading...</div>
+    <div id="workouts-container"></div>
+
+    <div class="config-section" id="config-section" style="display:none">
+      <div class="config-label">Supabase connection</div>
+      <div class="config-row"><input type="text" id="sb-url" placeholder="Project URL (https://xxx.supabase.co)" /></div>
+      <div class="config-row">
+        <input type="text" id="sb-key" placeholder="Anon key" />
+        <button class="config-save" onclick="saveConfig()">Save</button>
+      </div>
+      <p style="font-size:10px;color:#555;margin-top:6px">Supabase → Settings → API</p>
+    </div>
+    <button class="btn-ghost" onclick="toggleConfig()">⚙ Supabase settings</button>
+  </div>
+
+  <script>
+    const WORKOUTS = [
+      { num: 1, name: "Lower Body", type: "lower", exercises: [
+        { name: "Single-Leg Squat", muscles: "Glutes / Quads" },
+        { name: "Deadlift", muscles: "Hamstrings / Back" },
+        { name: "Squat", muscles: "Quads / Glutes" },
+        { name: "Calf Raise", muscles: "Calves" },
+      ]},
+      { num: 2, name: "Core & Push", type: "upper", exercises: [
+        { name: "Curl", muscles: "Biceps" },
+        { name: "Push-Up", muscles: "Chest / Tris" },
+        { name: "Row", muscles: "Back / Biceps" },
+        { name: "Plank", muscles: "Core" },
+      ]},
+      { num: 3, name: "Pull & Arms", type: "upper", exercises: [
+        { name: "Chin-Up", muscles: "Lats / Biceps" },
+        { name: "Dip", muscles: "Chest / Tris" },
+        { name: "Tricep Extension", muscles: "Triceps" },
+        { name: "Lateral Raise", muscles: "Shoulders" },
+      ]},
+      { num: 4, name: "Press & Pull", type: "upper", exercises: [
+        { name: "Bench Press", muscles: "Chest / Tris" },
+        { name: "Arnold Press", muscles: "Shoulders" },
+        { name: "Face Pull", muscles: "Rear Delt / RC" },
+        { name: "Hang Knee", muscles: "Core / Hip Flex" },
+      ]}
+    ];
+
+    let progress = {};
+    let supabaseUrl = 'https://kdelwwnpuuvgnamumhec.supabase.co';
+    let supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtkZWx3d25wdXV2Z25hbXVtaGVjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMjA4MjgsImV4cCI6MjA5MTY5NjgyOH0.3bqeOQDYMXj7NTnafgW6xtOVNI0EWfEg25SxyBcMw0w';
+
+    function loadLocal() {
+      try { const r = localStorage.getItem('workout_progress_v1'); return r ? JSON.parse(r) : null; } catch(e) { return null; }
+    }
+    function saveLocal(d) { localStorage.setItem('workout_progress_v1', JSON.stringify(d)); }
+
+    async function fetchSupabase() {
+      if (!supabaseUrl || !supabaseKey) return null;
+      try {
+        const res = await fetch(`${supabaseUrl}/rest/v1/workout_progress?select=workout_number,last_done_index,last_updated`, {
+          headers: { 'apikey': supabaseKey, 'Authorization': `Bearer ${supabaseKey}` }
+        });
+        if (!res.ok) return null;
+        const rows = await res.json();
+        const data = {};
+        rows.forEach(r => { data[r.workout_number] = { last_done_index: r.last_done_index }; });
+        return data;
+      } catch(e) { return null; }
+    }
+
+    async function upsertSupabase(workoutNum, idx) {
+      if (!supabaseUrl || !supabaseKey) return;
+      try {
+        await fetch(`${supabaseUrl}/rest/v1/workout_progress`, {
+          method: 'POST',
+          headers: { 'apikey': supabaseKey, 'Authorization': `Bearer ${supabaseKey}`, 'Content-Type': 'application/json', 'Prefer': 'resolution=merge-duplicates' },
+          body: JSON.stringify({ workout_number: workoutNum, last_done_index: idx, last_updated: new Date().toISOString() })
+        });
+      } catch(e) {}
+    }
+
+    function render() {
+      const container = document.getElementById('workouts-container');
+      container.innerHTML = '';
+      WORKOUTS.forEach(workout => {
+        const isUpper = workout.type === 'upper';
+        const prog = progress[workout.num] || { last_done_index: null };
+        const focusIdx = prog.last_done_index;
+
+        const card = document.createElement('div');
+        card.className = `workout-card ${isUpper ? 'card-upper' : 'card-lower'}`;
+
+        const hdr = document.createElement('div');
+        hdr.className = 'workout-header';
+        hdr.innerHTML = `<div class="accent-bar"></div><span class="workout-title">${workout.name}</span>`;
+        card.appendChild(hdr);
+
+        workout.exercises.forEach((ex, idx) => {
+          const isFocus = focusIdx !== null && idx === focusIdx;
+          const dotClass = isFocus ? (isUpper ? 'focus-upper' : 'focus-lower') : '';
+          const rowClass = isFocus ? (isUpper ? 'is-focus-upper' : 'is-focus-lower') : '';
+          const badge = isFocus ? `<span class="${isUpper ? 'focus-badge-upper' : 'focus-badge-lower'}">Focus</span>` : '';
+
+          const row = document.createElement('div');
+          row.className = `exercise-row ${rowClass}`;
+          row.innerHTML = `
+            <span class="state-dot ${dotClass}"></span>
+            <span class="ex-name">${ex.name}</span>
+            ${badge}
+            <span class="ex-muscles">${ex.muscles}</span>
+          `;
+
+          row.addEventListener('click', async () => {
+            progress[workout.num] = { last_done_index: idx };
+            saveLocal(progress);
+            render();
+            setStatus('Saved');
+            await upsertSupabase(workout.num, idx);
+            setStatus(supabaseUrl ? 'Synced' : 'Saved locally · Connect Supabase to sync across devices');
+          });
+
+          card.appendChild(row);
+        });
+        container.appendChild(card);
+      });
+    }
+
+    function setStatus(msg) { document.getElementById('status-bar').textContent = msg; }
+
+    function toggleConfig() {
+      const el = document.getElementById('config-section');
+      el.style.display = el.style.display === 'none' ? 'block' : 'none';
+      if (el.style.display === 'block') {
+        document.getElementById('sb-url').value = supabaseUrl;
+        document.getElementById('sb-key').value = supabaseKey;
+      }
+    }
+
+    function saveConfig() {
+      supabaseUrl = document.getElementById('sb-url').value.trim().replace(/\/$/, '');
+      supabaseKey = document.getElementById('sb-key').value.trim();
+      localStorage.setItem('sb_url', supabaseUrl);
+      localStorage.setItem('sb_key', supabaseKey);
+      document.getElementById('config-section').style.display = 'none';
+      setStatus('Connecting...');
+      init();
+    }
+
+    async function init() {
+      const local = loadLocal();
+      if (local) { progress = local; render(); }
+      const remote = await fetchSupabase();
+      if (remote) { progress = remote; saveLocal(progress); setStatus('Synced'); }
+      else if (local) { setStatus(supabaseUrl ? 'Could not reach Supabase · showing local data' : 'Tap an exercise to set your focus'); }
+      else { progress = {}; setStatus('Tap an exercise to set your focus'); }
+      render();
+    }
+
+    init();
+  </script>
+</body>
+</html>
